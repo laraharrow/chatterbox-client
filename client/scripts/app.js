@@ -1,13 +1,17 @@
 // YOUR CODE HERE:
+
+
 class App {
   constructor () {
     this.user = window.location.search.substr(10);
     this.server = 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages';
+    this.friends = {};
   }
 
 
   init() {
     console.log('init ran');
+    app.fetch();
   }
 
   send(mess) {
@@ -33,7 +37,7 @@ class App {
       type: 'GET',
       contentType: 'application/json',
       success: function (data) {
-        //console.log('GET MESSAGES', data.results[96].text);
+        console.log('GET MESSAGES', data.results[96]);
         var currentRooms = {};
         for (var i = 0; i < data.results.length; i ++) {
           if (data.results[i].text) {
@@ -42,8 +46,8 @@ class App {
             if (!currentRooms[data.results[i].roomname] && data.results[i].roomname !== undefined) {
               currentRooms[data.results[i].roomname] = data.results[i].roomname;
               app.renderRoom(currentRooms[data.results[i].roomname]);
-            } 
-            
+            }
+
           }
         }
       },
@@ -53,31 +57,63 @@ class App {
       }
     });
   }
-    
+
   clearMessages() {
     //clear DOM
     $('#chats').empty();
   }
 
   renderMessage(mess) {
-    console.log('renderMessage ran');
-    $('#chats').append(`<div>${mess.username}: ${mess.text}</div>`);
+
+    var cleanUsername = app.escapeXSS(mess.username);
+    if (app.friends[mess.username]) {
+      $('#chats').append(`<div><button onClick="app.handleUsernameClick('${cleanUsername}')">${cleanUsername}:</button> <b>${app.escapeXSS(mess.text)}</b></div>`);
+    } else {
+      $('#chats').append(`<div><button onClick="app.handleUsernameClick('${cleanUsername}')">${cleanUsername}:</button> <p>${app.escapeXSS(mess.text)}</p></div>`);
+    }
   }
-  
+
   renderRoom(room) {
-    console.log('renderRoom ran');
-    
     $('#roomSelect').append(`<div>${room}</div>`);
+  }
+
+  handleUsernameClick(username) {
+    console.log('handleUsernameClick called on user : ', username);
+    if (!app.friends[username]) {
+      $('#friensList').append(`<p>${username}</p>`);
+      app.friends[username] = true;
+    }
+  }
+
+  escapeXSS(string) {
+    var entityMap = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': '&quot;',
+        "'": '&#39;',
+        "/": '&#x2F;'
+    };
+    return String(string).replace(/[&<>"'\/]/g, function (s) {
+        return entityMap[s];
+    });
   }
 }
 
-var app = new App;
+var app;
+$(document).ready(() => {
+  app = new App;
+  app.init());
+}
 
-// var message = {
-//   username: 'lll',
-//   text: 'trololo',
-//   roomname: '4chan'
-// };
+// Object {
+  // createdAt : "2017-05-27T20:55:14.174Z",
+  // objectId: "mB7wBQAdbQ",
+  // roomname: "testRoom",
+  // text: "ukjhj",
+  // updatedAt: "2017-05-27T20:55:14.174Z",
+  //username: "user"
+//}
 
 
 // $.ajax({
@@ -93,7 +129,3 @@ var app = new App;
 //     console.error('chatterbox: Failed to send message', data);
 //   }
 // });
-
-
-
-
