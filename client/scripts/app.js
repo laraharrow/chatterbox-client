@@ -1,11 +1,16 @@
 // YOUR CODE HERE:
-var app = {
-  user: window.location.search,
-  server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
-  init: function() {
+class App {
+  constructor () {
+    this.user = window.location.search.substr(10);
+    this.server = 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages';
+  }
+
+
+  init() {
     console.log('init ran');
-  },
-  send: function(mess) {
+  }
+
+  send(mess) {
     console.log('app.send called, message is : ' + JSON.stringify(mess));
     $.ajax({
       url: app.server,
@@ -20,17 +25,25 @@ var app = {
         console.error('chatterbox: Failed to send message', data);
       }
     });
-  },
-  fetch: function() {
+  }
+
+  fetch() {
     $.ajax({
       url: app.server,
       type: 'GET',
       contentType: 'application/json',
       success: function (data) {
-        console.log('GET MESSAGES', data);
-        for (var i = 1; i < 10; i ++) {
-          if (data.results[i]) {
-            app.renderMessage(data.results[i].text);
+        //console.log('GET MESSAGES', data.results[96].text);
+        var currentRooms = {};
+        for (var i = 0; i < data.results.length; i ++) {
+          if (data.results[i].text) {
+            //console.log('Inside FOR loop ', i, data.results[i].text);
+            app.renderMessage(data.results[i]);
+            if (!currentRooms[data.results[i].roomname] && data.results[i].roomname !== undefined) {
+              currentRooms[data.results[i].roomname] = data.results[i].roomname;
+              app.renderRoom(currentRooms[data.results[i].roomname]);
+            } 
+            
           }
         }
       },
@@ -39,19 +52,26 @@ var app = {
         console.error('chatterbox: Failed to get messages', data);
       }
     });
-  },
-  clearMessages: function() {
-    //clear DOM
-    $('#chat').empty();
-  },
-  renderMessage: function(mess) {
-    console.log('renderMessage ran');
-    $('#chat').append(`<div>${mess.text}</div>`);
   }
     
-  
-};
+  clearMessages() {
+    //clear DOM
+    $('#chats').empty();
+  }
 
+  renderMessage(mess) {
+    console.log('renderMessage ran');
+    $('#chats').append(`<div>${mess.username}: ${mess.text}</div>`);
+  }
+  
+  renderRoom(room) {
+    console.log('renderRoom ran');
+    
+    $('#roomSelect').append(`<div>${room}</div>`);
+  }
+}
+
+var app = new App;
 
 // var message = {
 //   username: 'lll',
