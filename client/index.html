@@ -26,16 +26,18 @@
   </head>
   <body>
     <div id="main">
-      <nav class="navbar navbar-default">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
+      <div id="rooms">Room:
+        <select id="roomSelect"></select>
+      </div>
+      <form  id="send" action="#" method="post">
+        Enter your message:<br>
+        <input type="text" id="inputMess" name="message"/>
+        <input class="submit" type="submit"/>
+      </form>
+      <div id="chats"></div>
+      <div id='friensList'>Friend's List</div>
     </div>
-    <form>
-      <input type="text"/>
-      <input type="submit"/>
-    </form>
-    <div id="roomSelect"></div>
-    <div id="chats"></div>
-    <div id='friensList'>Friend's List</div>
   </body>
 </html>

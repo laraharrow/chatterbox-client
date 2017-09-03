@@ -1,6 +1,16 @@
 // YOUR CODE HERE:
 
+$(document).ready(function(){
+  var submitText;
+  var currentRoom;
+  $('form').submit((event) => {
+    submitText = $('#inputMess').val();
+    currentRoom = $('#rooms').find(':selected').text();
+    app.handleSubmit(submitText, currentRoom);
+    event.preventDefault();
+  })
 
+})
 class App {
   constructor () {
     this.user = window.location.search.substr(10);
@@ -15,7 +25,7 @@ class App {
   }
 
   send(mess) {
-    console.log('app.send called, message is : ' + JSON.stringify(mess));
+    // console.log('app.send called, message is : ' + JSON.stringify(mess));
     $.ajax({
       url: app.server,
       type: 'POST',
@@ -37,13 +47,13 @@ class App {
       type: 'GET',
       contentType: 'application/json',
       success: function (data) {
-        console.log('GET MESSAGES', data.results[96]);
+        //console.log('GET MESSAGES', data.results[96]);
         var currentRooms = {};
         for (var i = 0; i < data.results.length; i ++) {
           if (data.results[i].text) {
             //console.log('Inside FOR loop ', i, data.results[i].text);
             app.renderMessage(data.results[i]);
-            if (!currentRooms[data.results[i].roomname] && data.results[i].roomname !== undefined) {
+            if (!currentRooms[data.results[i].roomname] && data.results[i].roomname !== undefined && data.results[i].roomname !== "") {
               currentRooms[data.results[i].roomname] = data.results[i].roomname;
               app.renderRoom(currentRooms[data.results[i].roomname]);
             }
@@ -66,15 +76,11 @@ class App {
   renderMessage(mess) {
 
     var cleanUsername = app.escapeXSS(mess.username);
-    if (app.friends[mess.username]) {
-      $('#chats').append(`<div><button onClick="app.handleUsernameClick('${cleanUsername}')">${cleanUsername}:</button> <b>${app.escapeXSS(mess.text)}</b></div>`);
-    } else {
-      $('#chats').append(`<div><button onClick="app.handleUsernameClick('${cleanUsername}')">${cleanUsername}:</button> <p>${app.escapeXSS(mess.text)}</p></div>`);
-    }
+      $('#chats').append(`<div class="chat"><button class="username" onClick="app.handleUsernameClick('${cleanUsername}')">${cleanUsername}:</button> <p>${app.escapeXSS(mess.text)}</p></div>`);
   }
 
   renderRoom(room) {
-    $('#roomSelect').append(`<div>${room}</div>`);
+    $('#roomSelect').append(`<option>${room}</option>`);
   }
 
   handleUsernameClick(username) {
@@ -83,6 +89,20 @@ class App {
       $('#friensList').append(`<p>${username}</p>`);
       app.friends[username] = true;
     }
+  }
+
+  handleSubmit(){
+    //POST it to the server
+    console.log('handleSubmit got called');
+    var message = {
+      test: $('#inputMess').val(),
+      roomname: $('#rooms').find(':selected').text(),
+      username: app.user
+    }
+    app.send(message);
+    //render message to the page
+    //app.fetch();
+    app.renderMessage(message);
   }
 
   escapeXSS(string) {
@@ -103,8 +123,8 @@ class App {
 var app;
 $(document).ready(() => {
   app = new App;
-  app.init());
-}
+  app.init();
+});
 
 // Object {
   // createdAt : "2017-05-27T20:55:14.174Z",
@@ -114,7 +134,11 @@ $(document).ready(() => {
   // updatedAt: "2017-05-27T20:55:14.174Z",
   //username: "user"
 //}
-
+// var message = {
+//   username: 'jack',
+//   text: 'attack',
+//   roomname: '1015'
+// }
 
 // $.ajax({
 //   url: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
